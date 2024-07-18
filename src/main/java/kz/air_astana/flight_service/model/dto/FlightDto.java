@@ -25,9 +25,12 @@ public class FlightDto {
 	@Size(max = 256)
 	private String destination;
 
+	@NotNull
 	private OffsetDateTime departure;
 
+	@NotNull
 	private OffsetDateTime arrival;
 
+	@NotNull
 	private FlightStatus status;
 }
