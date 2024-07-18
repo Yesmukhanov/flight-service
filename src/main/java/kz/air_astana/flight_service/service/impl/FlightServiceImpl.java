@@ -8,16 +8,24 @@ import kz.air_astana.flight_service.model.request.FlightRequest;
 import kz.air_astana.flight_service.repository.FlightRepository;
 import kz.air_astana.flight_service.service.FlightService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class FlightServiceImpl implements FlightService {
     private final FlightRepository flightRepository;
     private final FlightMapper flightMapper;
+    private final AuthenticationManager authenticationManager;
 
     @Override
     public ResponseEntity<?> addFlight(final FlightRequest flightRequest) {
@@ -61,6 +69,8 @@ public class FlightServiceImpl implements FlightService {
         flight.setStatus(FlightStatus.valueOf(status));
         flightRepository.save(flight);
 
+		log.info("USER {} CHANGED STATUS TIME: {}", getUsername(), LocalDateTime.now());
+
         return ResponseEntity.status(HttpStatus.CREATED).body(flight);
 
         }
@@ -69,6 +79,7 @@ public class FlightServiceImpl implements FlightService {
     private ResponseEntity<?> addFlightToDatabase(final Flight flight, final String flightStatus) {
         flight.setStatus(FlightStatus.valueOf(flightStatus));
         flightRepository.save(flight);
+        log.info("USER {} ADDED NEW FLIGHT TIME: {}", getUsername(), LocalDateTime.now());
 
         return ResponseEntity.status(HttpStatusCode.valueOf(201)).body(flight);
     }
@@ -80,5 +91,11 @@ public class FlightServiceImpl implements FlightService {
         } catch (IllegalArgumentException e) {
             return true;
         }
+    }
+
+    private String getUsername() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        return auth.getName();
     }
 }

@@ -29,20 +29,17 @@ public class SecurityConfig {
 				.csrf(AbstractHttpConfigurer::disable)
 				.authorizeHttpRequests(auth ->
 						auth
-								.requestMatchers("/api/v1/auth/**")
+								.requestMatchers("/api/v1/auth/**").permitAll() // Allow authentication URLs
+								.requestMatchers(HttpMethod.POST, "/api/v1/flight/**").hasAuthority("MODERATOR")
+								.requestMatchers(HttpMethod.PUT, "/api/v1/flight/**").hasAuthority("MODERATOR")
+								.requestMatchers("/swagger-ui/index.html", "/swagger-ui/**", "/v3/api-docs/**")
 								.permitAll()
-								.requestMatchers(HttpMethod.POST,"api/v1/flight/**").hasAuthority("MODERATOR")
-								.requestMatchers(HttpMethod.PUT,"api/v1/flight/**").hasAuthority("MODERATOR")
 								.anyRequest()
 								.authenticated())
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authenticationProvider(authenticationProvider)
 				.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
-
 		return http.build();
 	}
-
-
-
 }

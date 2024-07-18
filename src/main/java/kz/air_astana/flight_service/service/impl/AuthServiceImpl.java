@@ -10,16 +10,18 @@ import kz.air_astana.flight_service.repository.UserRepository;
 import kz.air_astana.flight_service.service.AuthService;
 import kz.air_astana.flight_service.service.JwtService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Optional;
 
-
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
@@ -42,7 +44,7 @@ public class AuthServiceImpl implements AuthService {
 				.password(passwordEncoder.encode(registerRequest.getPassword()))
 				.role(Role.USER)
 				.build();
-
+		log.info("REGISTERED NEW USER {} TIME: {}", registerRequest.getUsername(), LocalDateTime.now());
 		userRepository.save(user);
 
 		String accessToken = jwtService.generateToken(user);
