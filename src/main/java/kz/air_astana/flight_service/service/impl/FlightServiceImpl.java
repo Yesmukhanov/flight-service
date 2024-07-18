@@ -2,9 +2,9 @@ package kz.air_astana.flight_service.service.impl;
 
 import kz.air_astana.flight_service.exception.FlightException;
 import kz.air_astana.flight_service.mapper.FlightMapper;
-import kz.air_astana.flight_service.model.dto.FlightDto;
 import kz.air_astana.flight_service.model.enitites.Flight;
 import kz.air_astana.flight_service.model.enums.FlightStatus;
+import kz.air_astana.flight_service.model.request.FlightRequest;
 import kz.air_astana.flight_service.repository.FlightRepository;
 import kz.air_astana.flight_service.service.FlightService;
 import lombok.RequiredArgsConstructor;
@@ -20,13 +20,25 @@ public class FlightServiceImpl implements FlightService {
     private final FlightMapper flightMapper;
 
     @Override
-    public ResponseEntity<?> addFlight(final FlightDto flightDto) {
-        Flight flight = flightMapper.toEntity(flightDto);
-
-        if(isValidFlightStatus(flightDto.getFlightStatus())) {
+    public ResponseEntity<?> addFlight(final FlightRequest flightRequest) {
+        if(isValidFlightStatus(flightRequest.getFlightStatus())) {
             throw new FlightException("STATUS NOT VALID");
         }
-        return addFlightToDatabase(flight, flightDto.getFlightStatus());
+        checkOriginAndDestination(flightRequest.getOrigin(), flightRequest.getDestination());
+        Flight flight = Flight
+                .builder()
+                .origin(flightRequest.getOrigin())
+                .destination(flightRequest.getDestination())
+                .departure(flightRequest.getDeparture())
+                .arrival(flightRequest.getArrival())
+                .build();
+        return addFlightToDatabase(flight, flightRequest.getFlightStatus());
+    }
+
+    private void checkOriginAndDestination(String origin, String destination) {
+        if(origin.isEmpty() || destination.isEmpty()) {
+            throw new FlightException("Origin and Destination must be not empty");
+        }
     }
 
     @Override
@@ -38,6 +50,11 @@ public class FlightServiceImpl implements FlightService {
             throw new FlightException("STATUS NOT VALID");
         }
         return updateFlightStatus(flight, status);
+    }
+
+    @Override
+    public ResponseEntity<?> getAllFlights() {
+        return ResponseEntity.ok(flightMapper.toListDto(flightRepository.findAllByOrderByArrivalAsc()));
     }
 
     private ResponseEntity<?> updateFlightStatus(final Flight flight, final String status) {
@@ -53,7 +70,7 @@ public class FlightServiceImpl implements FlightService {
         flight.setStatus(FlightStatus.valueOf(flightStatus));
         flightRepository.save(flight);
 
-        return ResponseEntity.status(HttpStatusCode.valueOf(204)).body(flight);
+        return ResponseEntity.status(HttpStatusCode.valueOf(201)).body(flight);
     }
 
     private boolean isValidFlightStatus(final String status) {

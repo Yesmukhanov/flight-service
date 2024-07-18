@@ -32,5 +32,5 @@ public class FlightDto {
 	private OffsetDateTime arrival;
 
 	@NotNull
-	private String flightStatus;
+	private FlightStatus status;
 }
