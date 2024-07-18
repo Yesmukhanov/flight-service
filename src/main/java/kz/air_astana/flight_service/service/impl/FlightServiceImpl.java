@@ -13,8 +13,6 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
-
 @Service
 @RequiredArgsConstructor
 public class FlightServiceImpl implements FlightService {
@@ -25,19 +23,25 @@ public class FlightServiceImpl implements FlightService {
     public ResponseEntity<?> addFlight(final FlightDto flightDto) {
         Flight flight = flightMapper.toEntity(flightDto);
 
-        return addFlightToDatabase(flight);
+        if(isValidFlightStatus(flightDto.getFlightStatus())) {
+            throw new FlightException("STATUS NOT VALID");
+        }
+        return addFlightToDatabase(flight, flightDto.getFlightStatus());
     }
 
     @Override
-    public ResponseEntity<?> changeStatus(final Integer id, final FlightStatus status) {
+    public ResponseEntity<?> changeStatus(final Integer id, final String  status) {
         Flight flight = flightRepository.findById(id)
                 .orElseThrow(() -> new FlightException("FLIGHT NOT FOUND"));
 
+        if(isValidFlightStatus(status)) {
+            throw new FlightException("STATUS NOT VALID");
+        }
         return updateFlightStatus(flight, status);
     }
 
-    private ResponseEntity<?> updateFlightStatus(final Flight flight, final FlightStatus status) {
-        flight.setStatus(status);
+    private ResponseEntity<?> updateFlightStatus(final Flight flight, final String status) {
+        flight.setStatus(FlightStatus.valueOf(status));
         flightRepository.save(flight);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(flight);
@@ -45,9 +49,19 @@ public class FlightServiceImpl implements FlightService {
         }
 
 
-    private ResponseEntity<?> addFlightToDatabase(final Flight flight) {
+    private ResponseEntity<?> addFlightToDatabase(final Flight flight, final String flightStatus) {
+        flight.setStatus(FlightStatus.valueOf(flightStatus));
         flightRepository.save(flight);
 
         return ResponseEntity.status(HttpStatusCode.valueOf(204)).body(flight);
+    }
+
+    private boolean isValidFlightStatus(final String status) {
+        try {
+            FlightStatus.valueOf(status);
+            return false;
+        } catch (IllegalArgumentException e) {
+            return true;
+        }
     }
 }

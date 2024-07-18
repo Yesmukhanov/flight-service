@@ -23,7 +23,7 @@ public class FlightController {
 
     @PutMapping("/{flightId}")
     public ResponseEntity<?> updateFlight(@PathVariable final Integer flightId,
-                                          @RequestParam(name = "status") final FlightStatus status) {
+                                          @RequestParam(name = "status") final String status) {
 
         return flightService.changeStatus(flightId, status);
     }

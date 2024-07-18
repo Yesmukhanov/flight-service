@@ -12,5 +12,5 @@ public interface FlightService {
 
     ResponseEntity<?> addFlight(final FlightDto flight);
 
-    ResponseEntity<?> changeStatus(final Integer id, final FlightStatus status);
+    ResponseEntity<?> changeStatus(final Integer id, final String status);
 }
