@@ -20,5 +20,4 @@ public class UserDto {
 	@Size(max = 256)
 	private String username;
 
-	private Role role;
 }
