@@ -19,7 +19,7 @@ This is the Flight Service application for managing flight information. It is bu
     ```sh
     cd air-astana
     ```
-   
+
 
 2. **Clone the repository:**
 
@@ -52,31 +52,13 @@ This is the Flight Service application for managing flight information. It is bu
     ```http
     POST /auth/register
     ```
-  
+
     ```curl
-      curl --location 'http://localhost:8080/api/v1/auth/register' \
+    curl --location 'http://localhost:8080/api/v1/auth/register' \
         --header 'Content-Type: application/json' \
         --data '{
-        "username": "",
-        "password": ""
-        }'
-    ```
-
-  Example request body:
-
-    ```json
-    {
         "username": "newuser",
         "password": "newpassword"
-    }
-    ```
-    
-    ```curl
-    curl --location 'http://localhost:8080/api/v1/auth/authentication' \
-        --header 'Content-Type: application/json' \
-        --data '{
-        "username": "",
-        "password": ""
         }'
     ```
 
@@ -89,36 +71,37 @@ This is the Flight Service application for managing flight information. It is bu
     }
     ```
 
-  - **Authenticate a user:**
+- **Authenticate a user:**
 
-      ```http
-      POST /auth/authenticate
-      ```
+    ```http
+    POST /auth/authenticate
+    ```
 
-    Example request body:
+    ```curl
+    curl --location 'http://localhost:8080/api/v1/auth/authenticate' \
+        --header 'Content-Type: application/json' \
+        --data '{
+        "username": "existinguser",
+        "password": "existingpassword"
+        }'
+    ```
 
-      ```json
-      {
-          "username": "existinguser",
-          "password": "existingpassword"
-      }
-      ```
-      ```info 
-          i'm added user moderator by body it's default user role MODERATOR
-      {
-          "username": "moderator",
-          "password": "moderator"
-      }
-      ```
+  Example response:
 
-    Example response:
+    ```json
+    {
+        "accessToken": "jwt-access-token",
+        "refreshToken": "jwt-refresh-token"
+    }
+    ```
 
-      ```json
-      {
-          "accessToken": "jwt-access-token",
-          "refreshToken": "jwt-refresh-token"
-      }
-      ```
+  > **Note**: The application includes a default user with the role `MODERATOR`:
+  > ```json
+    > {
+    >     "username": "moderator",
+    >     "password": "moderator"
+    > }
+    > ```
 
 - **Refresh token:**
 
@@ -150,48 +133,81 @@ This is the Flight Service application for managing flight information. It is bu
     ```http
     GET /flights
     ```
+
+  Example request:
+
     ```curl
-        curl --location 'http://localhost:8080/api/v1/flight' \
-            --header 'Content-Type: application/json' \
-            --data '{
-            "origin": "Ak",
+    curl --location 'http://localhost:8080/api/v1/flight' \
+        --header 'Content-Type: application/json'
+    ```
+
+  Example response:
+
+    ```json
+    [
+        {
+            "id": 1,
+            "origin": "Almaty",
             "destination": "Semey",
             "departure": "2024-07-20T10:15:30+06:00",
             "arrival": "2024-07-20T23:15:30+06:00",
             "flightStatus": "InTime"
-             }
-        '
+        },
+        {
+            "id": 2,
+            "origin": "Aktobe",
+            "destination": "Semey",
+            "departure": "2024-07-20T10:15:30+06:00",
+            "arrival": "2024-07-20T23:15:30+06:00",
+            "flightStatus": "Delayed"
+        }
+    ]
     ```
 
-  You can filter flights by origin and/or destination using query parameters:
+- **Add a new flight:**
 
     ```http
-    GET /flights
+    POST /flights
     ```
+
+  Example request:
+
     ```curl
-        curl --location 'http://localhost:8080/api/v1/flight'
+    curl --location 'http://localhost:8080/api/v1/flight' \
+        --header 'Content-Type: application/json' \
+        --data '{
+        "origin": "Aktobe",
+        "destination": "Semey",
+        "departure": "2024-07-20T10:15:30+06:00",
+        "arrival": "2024-07-20T23:15:30+06:00",
+        "flightStatus": "InTime"
+        }'
     ```
+
   Example request body:
 
     ```json
     {
-      "origin": "Aktobe",
-      "destination": "Semey",
-      "departure": "2024-07-20T10:15:30+06:00",
-      "arrival": "2024-07-20T23:15:30+06:00",
-      "flightStatus": "InTime"
-     }
-    ``` 
-  You can changes status flights by id:
+        "origin": "Aktobe",
+        "destination": "Semey",
+        "departure": "2024-07-20T10:15:30+06:00",
+        "arrival": "2024-07-20T23:15:30+06:00",
+        "flightStatus": "InTime"
+    }
+    ```
+
+- **Update flight status by ID:**
 
     ```http
     PUT /flights/{flightId}?status=Delayed
     ```
+
+  Example request:
+
     ```curl
-        curl --location --request PUT 'http://localhost:8080/api/v1/flight/1?status=Cancelled' \
-            --data ''
+    curl --location --request PUT 'http://localhost:8080/api/v1/flight/1?status=Cancelled' \
+        --data ''
     ```
-    
 
 ## Project Structure
 
