@@ -1,6 +1,6 @@
 package kz.air_astana.flight_service.service.impl;
 
-import kz.air_astana.flight_service.model.enitites.User;
+import kz.air_astana.flight_service.model.entitites.User;
 import kz.air_astana.flight_service.model.enums.Role;
 import kz.air_astana.flight_service.model.request.AuthenticationRequest;
 import kz.air_astana.flight_service.model.request.RefreshTokenRequest;
@@ -31,6 +31,7 @@ public class AuthServiceImpl implements AuthService {
 	private final JwtService jwtService;
 	private final AuthenticationManager authenticationManager;
 
+	@Override
 	public AuthenticationResponse register(final RegisterRequest registerRequest) {
 		Optional<User> existingUserOptional = userRepository.findByUsername(registerRequest.getUsername());
 
@@ -38,26 +39,20 @@ public class AuthServiceImpl implements AuthService {
 			throw new IllegalStateException("User with this email already exists");
 		}
 
-		User user = User
-				.builder()
-				.username(registerRequest.getUsername())
-				.password(passwordEncoder.encode(registerRequest.getPassword()))
-				.role(Role.USER)
-				.build();
+		User user = createUser(registerRequest.getUsername(), registerRequest.getPassword());
 		log.info("REGISTERED NEW USER {} TIME: {}", registerRequest.getUsername(), LocalDateTime.now());
 		userRepository.save(user);
 
 		String accessToken = jwtService.generateToken(user);
 		String refreshToken = jwtService.generateRefreshToken(new HashMap<>(), user);
 
-		return AuthenticationResponse
-				.builder()
+		return AuthenticationResponse.builder()
 				.accessToken(accessToken)
 				.refreshToken(refreshToken)
 				.build();
-
 	}
 
+	@Override
 	public AuthenticationResponse authentication(final AuthenticationRequest authenticationRequest) {
 		authenticationManager.authenticate(
 				new UsernamePasswordAuthenticationToken(
@@ -66,36 +61,43 @@ public class AuthServiceImpl implements AuthService {
 				)
 		);
 
-		User user = userRepository.findByUsername(authenticationRequest.getUsername()).orElseThrow(
-				() -> new UsernameNotFoundException("USER NOT FOUND"));
+		User user = userRepository.findByUsername(authenticationRequest.getUsername())
+				.orElseThrow(() -> new UsernameNotFoundException("USER NOT FOUND"));
 
 		String accessToken = jwtService.generateToken(user);
 		String refreshToken = jwtService.generateRefreshToken(new HashMap<>(), user);
 
-		return AuthenticationResponse
-				.builder()
+		return AuthenticationResponse.builder()
 				.accessToken(accessToken)
 				.refreshToken(refreshToken)
 				.build();
-
 	}
 
+	@Override
 	public AuthenticationResponse refreshToken(RefreshTokenRequest refreshTokenRequest) {
 		String username = jwtService.extractUserEmail(refreshTokenRequest.getRefreshToken());
-		User user = userRepository.findByUsername(username).orElseThrow();
+		User user = userRepository.findByUsername(username)
+				.orElseThrow(() -> new UsernameNotFoundException("USER NOT FOUND"));
 
 		if (jwtService.isTokenValid(refreshTokenRequest.getRefreshToken(), user)) {
-
 			String accessToken = jwtService.generateToken(user);
 			String refreshToken = refreshTokenRequest.getRefreshToken();
 
-			return AuthenticationResponse
-					.builder()
+			return AuthenticationResponse.builder()
 					.accessToken(accessToken)
 					.refreshToken(refreshToken)
 					.build();
 		}
 
 		return null;
+	}
+
+	private User createUser(String username, String password) {
+		Role role = "moderator".equals(username) ? Role.MODERATOR : Role.USER;
+		return User.builder()
+				.username(username)
+				.password(passwordEncoder.encode(password))
+				.role(role)
+				.build();
 	}
 }

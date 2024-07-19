@@ -7,6 +7,7 @@ import kz.air_astana.flight_service.model.request.FlightRequest;
 import kz.air_astana.flight_service.service.FlightService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -33,7 +34,10 @@ public class FlightController {
 
     @GetMapping
     @ApiOperation(value = "Get all flights")
-    public ResponseEntity<?> getAllFlights() {
-        return flightService.getAllFlights();
+    public ResponseEntity<?> getAllFlights(
+            @RequestParam(required = false) final String origin,
+            @RequestParam(required = false) final String destination) {
+
+        return ResponseEntity.ok(flightService.getAllFlights(origin, destination));
     }
 }

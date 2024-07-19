@@ -1,6 +1,5 @@
 package kz.air_astana.flight_service.model.dto;
 
-import kz.air_astana.flight_service.model.enums.Role;
 import lombok.*;
 
 import javax.validation.constraints.NotNull;

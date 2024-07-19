@@ -1,9 +1,7 @@
 package kz.air_astana.flight_service.mapper;
 
 import kz.air_astana.flight_service.model.dto.FlightDto;
-import kz.air_astana.flight_service.model.dto.UserDto;
-import kz.air_astana.flight_service.model.enitites.Flight;
-import kz.air_astana.flight_service.model.enitites.User;
+import kz.air_astana.flight_service.model.entitites.Flight;
 import org.mapstruct.Mapper;
 
 import java.util.List;
